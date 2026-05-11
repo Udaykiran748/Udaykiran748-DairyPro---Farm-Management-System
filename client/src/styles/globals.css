@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --farm-green: #1a6e1a;
+  --farm-green-light: #2da82d;
+  --earth-brown: #a34f1c;
+  --milk-white: #fefefe;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: #f8faf8;
+  color: #1a2e1a;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f0f5f0; }
+::-webkit-scrollbar-thumb { background: #84dc84; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a6e1a; }
+
+/* Dark mode */
+.dark body { background-color: #0d1f0d; color: #e8f5e8; }
+
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/60 rounded-2xl shadow-card;
+  }
+  .dark .glass-card {
+    @apply bg-farm-950/60 border-farm-800/40;
+  }
+
+  /* Stats card */
+  .stat-card {
+    @apply glass-card p-5 hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply bg-farm-600 hover:bg-farm-700 text-white font-medium px-5 py-2.5 rounded-xl
+           transition-all duration-200 shadow-green hover:shadow-lg active:scale-95
+           flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply bg-farm-50 hover:bg-farm-100 text-farm-700 font-medium px-5 py-2.5 rounded-xl
+           border border-farm-200 transition-all duration-200 flex items-center gap-2;
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply bg-red-50 hover:bg-red-100 text-red-700 font-medium px-4 py-2 rounded-xl
+           border border-red-200 transition-all duration-200;
+  }
+
+  /* Form input */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-xl border border-farm-200 bg-white
+           focus:outline-none focus:ring-2 focus:ring-farm-500 focus:border-transparent
+           placeholder-gray-400 text-sm transition-all duration-200;
+  }
+  .dark .form-input {
+    @apply bg-farm-950 border-farm-800 text-farm-100;
+  }
+
+  /* Form label */
+  .form-label {
+    @apply block text-sm font-medium text-farm-800 mb-1.5;
+  }
+
+  /* Section title */
+  .section-title {
+    @apply text-2xl font-display font-bold text-farm-900;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-green { @apply badge bg-farm-100 text-farm-800; }
+  .badge-yellow { @apply badge bg-yellow-100 text-yellow-800; }
+  .badge-red { @apply badge bg-red-100 text-red-800; }
+  .badge-blue { @apply badge bg-blue-100 text-blue-800; }
+  .badge-gray { @apply badge bg-gray-100 text-gray-700; }
+
+  /* Table styles */
+  .table-container {
+    @apply overflow-x-auto rounded-xl border border-farm-100;
+  }
+  .table { @apply w-full text-sm; }
+  .table th {
+    @apply bg-farm-50 px-4 py-3 text-left text-xs font-semibold text-farm-700 uppercase tracking-wider;
+  }
+  .table td { @apply px-4 py-3 text-gray-700 border-t border-farm-50; }
+  .table tr:hover td { @apply bg-farm-50/50; }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           transition-all duration-200 cursor-pointer text-farm-700 hover:bg-farm-100 hover:text-farm-900;
+  }
+  .nav-item.active {
+    @apply bg-farm-600 text-white shadow-green;
+  }
+
+  /* Page header */
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6;
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+  .modal-content {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto;
+  }
+  .modal-header {
+    @apply flex items-center justify-between p-6 border-b border-farm-100;
+  }
+  .modal-body { @apply p-6; }
+  .modal-footer { @apply flex justify-end gap-3 p-6 border-t border-farm-100; }
+}
+
+/* Page transition */
+.page-enter { animation: slideUp 0.3s ease-out; }
+
+/* Loading spinner */
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #dcf5dc;
+  border-top-color: #1a6e1a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Chart tooltips */
+.recharts-tooltip-wrapper { border-radius: 12px !important; }
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: 1px solid #dcf5dc !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  .print-page { page-break-after: always; }
+}
+
+/* Mobile responsive sidebar */
+@media (max-width: 768px) {
+  :root { --sidebar-width: 0px; }
+}
