@@ -1,9 +1,5 @@
-const Animal = require('../models/Animal');
-const MilkRecord = require('../models/MilkRecord');
-const Sale = require('../models/Sale');
-const Expense = require('../models/Expense');
-const Employee = require('../models/Employee');
-const HealthRecord = require('../models/HealthRecord');
+const { Animal, MilkRecord, Sale, Expense, Employee, HealthRecord, sequelize } = require('../models');
+const { Op } = require('sequelize');
 const moment = require('moment');
 
 exports.getDashboardStats = async (req, res) => {
@@ -13,50 +9,76 @@ exports.getDashboardStats = async (req, res) => {
     const monthEnd = moment().endOf('month');
 
     const [totalAnimals, totalEmployees] = await Promise.all([
-      Animal.countDocuments({ isActive: true }),
-      Employee.countDocuments({ isActive: true })
+      Animal.count({ where: { isActive: true } }),
+      Employee.count({ where: { isActive: true } })
     ]);
 
-    const todayMilk = await MilkRecord.aggregate([
-      { $match: { date: { $gte: today.toDate(), $lt: moment(today).endOf('day').toDate() } } },
-      { $group: { _id: null, total: { $sum: '$totalMilk' } } }
-    ]);
+    const todayMilk = await MilkRecord.findAll({
+      where: {
+        date: {
+          [Op.gte]: today.toDate(),
+          [Op.lt]: moment(today).endOf('day').toDate()
+        }
+      }
+    });
+    const todayMilkTotal = todayMilk.reduce((sum, r) => sum + r.totalMilk, 0);
 
-    const monthSales = await Sale.aggregate([
-      { $match: { date: { $gte: monthStart.toDate(), $lte: monthEnd.toDate() } } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' }, qty: { $sum: '$quantity' } } }
-    ]);
+    const monthSales = await Sale.findAll({
+      where: {
+        date: {
+          [Op.gte]: monthStart.toDate(),
+          [Op.lte]: monthEnd.toDate()
+        }
+      }
+    });
+    const monthSalesTotal = monthSales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const monthSalesQty = monthSales.reduce((sum, s) => sum + s.quantity, 0);
 
-    const monthExpenses = await Expense.aggregate([
-      { $match: { date: { $gte: monthStart.toDate(), $lte: monthEnd.toDate() } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
+    const monthExpenses = await Expense.findAll({
+      where: {
+        date: {
+          [Op.gte]: monthStart.toDate(),
+          [Op.lte]: monthEnd.toDate()
+        }
+      }
+    });
+    const monthExpensesTotal = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
 
-    const upcomingVaccinations = await HealthRecord.countDocuments({
-      nextDueDate: { $gte: new Date(), $lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
+    const upcomingVaccinations = await HealthRecord.count({
+      where: {
+        nextDueDate: {
+          [Op.gte]: new Date(),
+          [Op.lte]: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        }
+      }
     });
 
-    const weeklyMilk = await MilkRecord.aggregate([
-      { $match: { date: { $gte: moment().subtract(7, 'days').toDate() } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$date' } }, total: { $sum: '$totalMilk' } } },
-      { $sort: { _id: 1 } }
-    ]);
-
-    const income = monthSales[0]?.total || 0;
-    const expenses = monthExpenses[0]?.total || 0;
+    const weeklyMilk = await MilkRecord.findAll({
+      where: {
+        date: {
+          [Op.gte]: moment().subtract(7, 'days').toDate()
+        }
+      },
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('date')), '_id'],
+        [sequelize.fn('SUM', sequelize.col('totalMilk')), 'total']
+      ],
+      group: [sequelize.fn('DATE', sequelize.col('date'))],
+      order: [[sequelize.fn('DATE', sequelize.col('date')), 'ASC']]
+    });
 
     res.json({
       success: true,
       data: {
         totalAnimals,
         totalEmployees,
-        todayMilkProduction: todayMilk[0]?.total || 0,
-        monthlyIncome: income,
-        monthlyExpenses: expenses,
-        monthlyProfit: income - expenses,
+        todayMilkProduction: todayMilkTotal,
+        monthlyIncome: monthSalesTotal,
+        monthlyExpenses: monthExpensesTotal,
+        monthlyProfit: monthSalesTotal - monthExpensesTotal,
         upcomingVaccinations,
         weeklyMilkChart: weeklyMilk,
-        monthlySalesQty: monthSales[0]?.qty || 0
+        monthlySalesQty: monthSalesQty
       }
     });
   } catch (err) {

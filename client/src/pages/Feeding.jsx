@@ -5,6 +5,7 @@ import api from '../services/api'
 import Modal from '../components/common/Modal'
 import Badge from '../components/common/Badge'
 import toast from 'react-hot-toast'
+import '../styles/Feeding.css'
 
 const FEED_TYPES = ['Hay','Green Fodder','Concentrate','Silage','Wheat Straw','Rice Straw','Mineral Mix','Cotton Seed Cake']
 const DEMO_SCHEDULE = [
@@ -39,24 +40,29 @@ export default function Feeding() {
 
   const handleSave = async (e) => {
     e.preventDefault(); setSaving(true)
-    try { await api.post('/feeding', form); api.get('/feeding').then(r => { if(r.data.data?.length) setSchedule(r.data.data) }).catch(()=>{}); toast.success('Feed entry added!') }
-    catch { setSchedule(prev=>[{...form, id:Date.now(), animals:[{name:'All Animals'}], date: new Date().toISOString().slice(0,10)},...prev]); toast.success('Added! (demo)') }
-    finally { setSaving(false); setModalOpen(false) }
+    try { 
+      await api.post('/feeding', form); 
+      api.get('/feeding').then(r => { if(r.data.data?.length) setSchedule(r.data.data) }).catch(()=>{}); 
+      toast.success('Feed entry added!') 
+      setModalOpen(false)
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'Failed to save feed entry')
+    } finally { setSaving(false) }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div><h1 className="page-title">Feeding Management</h1><p className="text-sm text-gray-500 mt-0.5">Schedule feeds and track inventory</p></div>
-        <button onClick={()=>{setForm(EMPTY);setModalOpen(true)}} className="btn-primary flex items-center gap-2"><HiPlus className="w-5 h-5" />Log Feed</button>
+    <div className="feeding-page">
+      <div className="feeding-header">
+        <div><h1 className="page-title">Feeding Management</h1><p className="page-subtitle">Schedule feeds and track inventory</p></div>
+        <button onClick={()=>{setForm(EMPTY);setModalOpen(true)}} className="btn btn-primary"><HiPlus style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} />Log Feed</button>
       </div>
 
       {lowStock.length > 0 && (
-        <div className="glass-card p-4 bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800">
-          <h3 className="font-semibold text-red-700 dark:text-red-300 mb-2">🚨 Low Stock Alert ({lowStock.length} items)</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="card alert-box">
+          <h3 className="alert-title">🚨 Low Stock Alert ({lowStock.length} items)</h3>
+          <div className="alert-tags">
             {lowStock.map(i=>(
-              <div key={i.id} className="px-3 py-1 bg-red-100 dark:bg-red-900/30 rounded-lg text-sm text-red-700 dark:text-red-300">
+              <div key={i.id} className="alert-tag">
                 {i.feedType}: {i.currentStock}{i.unit} (min: {i.minStock}{i.unit})
               </div>
             ))}
@@ -64,55 +70,55 @@ export default function Feeding() {
         </div>
       )}
 
-      <div className="flex gap-2 border-b border-gray-100 dark:border-gray-800">
+      <div className="tabs-container">
         {['schedule','inventory'].map(t=>(
           <button key={t} onClick={()=>setTab(t)}
-            className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-all capitalize ${tab===t?'border-primary-600 text-primary-700':'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            className={`tab-btn ${tab===t?'active':''}`}>
             {t==='schedule'?'📋 Feed Schedule':'📦 Stock Inventory'}
           </button>
         ))}
       </div>
 
       {tab === 'schedule' ? (
-        <div className="space-y-3">
+        <div className="schedule-list">
           {schedule.map((f,i)=>(
             <motion.div key={f._id||f.id} initial={{opacity:0,x:-20}} animate={{opacity:1,x:0}} transition={{delay:i*0.07}}
-              className="glass-card p-4 flex items-center gap-4">
-              <div className="w-16 h-16 bg-primary-50 dark:bg-primary-950/30 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
-                <span className="text-lg">🌿</span>
-                <span className="text-xs font-medium text-primary-700 dark:text-primary-400">{f.time}</span>
+              className="card schedule-item">
+              <div className="schedule-icon-box">
+                <span className="schedule-icon">🌿</span>
+                <span className="schedule-time">{f.time}</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-800 dark:text-gray-100 text-base">{f.feedType}</div>
-                <div className="text-sm text-gray-500 mt-0.5">
+              <div className="schedule-content">
+                <div className="schedule-title">{f.feedType}</div>
+                <div className="schedule-desc">
                   {f.quantity}{f.unit} — {f.animals?.map(a=>a.name).join(', ')}
                 </div>
               </div>
-              <div className="flex-shrink-0">
-                <div className="text-sm text-gray-400">{f.date?.slice(0,10)}</div>
+              <div className="schedule-date">
+                {f.date?.slice(0,10)}
               </div>
             </motion.div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="inventory-grid">
           {inventory.map((item,i)=>{
             const pct = Math.min(100, Math.round((item.currentStock / (item.minStock*3))*100))
             const isLow = item.currentStock <= item.minStock
             return (
               <motion.div key={item._id||item.id} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:i*0.1}}
-                className={`glass-card p-5 ${isLow?'border-red-200 dark:border-red-800':''}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">{item.feedType}</h3>
+                className={`card inventory-card ${isLow?'low-stock':''}`}>
+                <div className="inventory-card-header">
+                  <h3 className="inventory-title">{item.feedType}</h3>
                   {isLow && <Badge label="Low Stock" color="red" />}
                 </div>
-                <div className="text-3xl font-display font-bold text-gray-800 dark:text-gray-100 mb-1">
-                  {item.currentStock}<span className="text-base font-normal text-gray-400 ml-1">{item.unit}</span>
+                <div className="inventory-stock">
+                  {item.currentStock}<span className="inventory-unit">{item.unit}</span>
                 </div>
-                <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 mt-2 mb-3">
-                  <div className={`h-2 rounded-full transition-all ${isLow?'bg-red-500':'bg-primary-500'}`} style={{width:`${pct}%`}} />
+                <div className="progress-track">
+                  <div className={`progress-bar ${isLow?'progress-danger':'progress-primary'}`} style={{width:`${pct}%`}} />
                 </div>
-                <div className="text-xs text-gray-500 space-y-0.5">
+                <div className="inventory-details">
                   <div>Min required: {item.minStock}{item.unit}</div>
                   <div>Price: ₹{item.pricePerUnit}/{item.unit}</div>
                   <div>Supplier: {item.supplier}</div>
@@ -124,36 +130,36 @@ export default function Feeding() {
       )}
 
       <Modal isOpen={modalOpen} onClose={()=>setModalOpen(false)} title="Log Feed Entry">
-        <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Feed Type</label>
-            <select value={form.feedType} onChange={e=>up('feedType',e.target.value)} className="input-field">
+        <form onSubmit={handleSave} className="modal-form">
+          <div className="form-group">
+            <label className="form-label">Feed Type</label>
+            <select value={form.feedType} onChange={e=>up('feedType',e.target.value)} style={{ width: '100%' }}>
               {FEED_TYPES.map(f=><option key={f} value={f}>{f}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
-              <input type="number" value={form.quantity} onChange={e=>up('quantity',e.target.value)} className="input-field" placeholder="50" required />
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Quantity</label>
+              <input type="number" value={form.quantity} onChange={e=>up('quantity',e.target.value)} style={{ width: '100%' }} placeholder="50" required />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
-              <select value={form.unit} onChange={e=>up('unit',e.target.value)} className="input-field">
+            <div className="form-group">
+              <label className="form-label">Unit</label>
+              <select value={form.unit} onChange={e=>up('unit',e.target.value)} style={{ width: '100%' }}>
                 {['kg','g','litre'].map(u=><option key={u} value={u}>{u}</option>)}
               </select>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
-            <input type="time" value={form.time} onChange={e=>up('time',e.target.value)} className="input-field" required />
+          <div className="form-group">
+            <label className="form-label">Time</label>
+            <input type="time" value={form.time} onChange={e=>up('time',e.target.value)} style={{ width: '100%' }} required />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-            <textarea value={form.notes||''} onChange={e=>up('notes',e.target.value)} rows={2} className="input-field resize-none" placeholder="Any special instructions..." />
+          <div className="form-group">
+            <label className="form-label">Notes</label>
+            <textarea value={form.notes||''} onChange={e=>up('notes',e.target.value)} rows={2} style={{ width: '100%', resize: 'none' }} placeholder="Any special instructions..." />
           </div>
-          <div className="flex gap-3 justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
-            <button type="button" onClick={()=>setModalOpen(false)} className="btn-ghost">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary">{saving?'Saving...':'Log Feed'}</button>
+          <div className="modal-footer">
+            <button type="button" onClick={()=>setModalOpen(false)} className="btn btn-outline">Cancel</button>
+            <button type="submit" disabled={saving} className="btn btn-primary">{saving?'Saving...':'Log Feed'}</button>
           </div>
         </form>
       </Modal>

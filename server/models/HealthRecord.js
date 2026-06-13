@@ -1,17 +1,46 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const healthRecordSchema = new mongoose.Schema({
-  animal:       { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', required: true },
-  type:         { type: String, enum: ['Vaccination', 'Treatment', 'Check-up', 'Surgery', 'Deworming'], required: true },
-  date:         { type: Date, required: true, default: Date.now },
-  description:  { type: String, required: true },
-  doctor:       { type: String },
-  medicines:    [{ name: String, dose: String, duration: String }],
-  cost:         { type: Number, default: 0 },
-  nextDueDate:  { type: Date },
-  status:       { type: String, enum: ['Completed', 'Ongoing', 'Scheduled'], default: 'Completed' },
-  notes:        { type: String },
-  recordedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const HealthRecord = sequelize.define('HealthRecord', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    type: {
+      type: DataTypes.ENUM('Vaccination', 'Treatment', 'Check-up', 'Surgery', 'Deworming'),
+      allowNull: false,
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    doctor: {
+      type: DataTypes.STRING,
+    },
+    medicines: {
+      type: DataTypes.JSON, // Stores array of objects
+    },
+    cost: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    nextDueDate: {
+      type: DataTypes.DATE,
+    },
+    status: {
+      type: DataTypes.ENUM('Completed', 'Ongoing', 'Scheduled'),
+      defaultValue: 'Completed',
+    },
+    notes: {
+      type: DataTypes.TEXT,
+    },
+  });
 
-module.exports = mongoose.model('HealthRecord', healthRecordSchema);
+  return HealthRecord;
+};

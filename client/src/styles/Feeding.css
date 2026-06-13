@@ -1,0 +1,251 @@
+.feeding-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.feeding-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.alert-box {
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+}
+
+.alert-title {
+  font-weight: 600;
+  color: #B91C1C;
+  margin-bottom: var(--spacing-sm);
+}
+
+.alert-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.alert-tag {
+  padding: 0.25rem 0.75rem;
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem;
+}
+
+.tabs-container {
+  display: flex;
+  gap: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-btn {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  color: var(--color-text-muted);
+}
+
+.tab-btn:hover {
+  color: var(--color-text-main);
+}
+
+.tab-btn.active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.schedule-icon-box {
+  width: 4rem;
+  height: 4rem;
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.schedule-icon {
+  font-size: 1.125rem;
+}
+
+.schedule-time {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.schedule-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-title {
+  font-weight: 600;
+  color: var(--color-text-main);
+  font-size: 1rem;
+}
+
+.schedule-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.125rem;
+}
+
+.schedule-date {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .inventory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .inventory-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.inventory-card {
+  padding: var(--spacing-lg);
+}
+
+.inventory-card.low-stock {
+  border: 1px solid #FECACA;
+}
+
+.inventory-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.inventory-title {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.inventory-stock {
+  font-family: var(--font-heading);
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: 0.25rem;
+}
+
+.inventory-unit {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 0.25rem;
+}
+
+.progress-track {
+  width: 100%;
+  background-color: var(--color-border);
+  border-radius: 9999px;
+  height: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.progress-bar {
+  height: 0.5rem;
+  border-radius: 9999px;
+  transition: all var(--transition-normal);
+}
+
+.progress-primary { background-color: var(--color-primary); }
+.progress-danger { background-color: var(--color-danger); }
+
+.inventory-details {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.modal-footer {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--spacing-sm);
+}

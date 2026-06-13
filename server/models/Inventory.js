@@ -1,16 +1,50 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const inventorySchema = new mongoose.Schema({
-  itemName:     { type: String, required: true },
-  category:     { type: String, enum: ['Feed', 'Medicine', 'Equipment', 'Tools', 'Other'], required: true },
-  quantity:     { type: Number, required: true, default: 0 },
-  unit:         { type: String, required: true },
-  minQuantity:  { type: Number, default: 5 },
-  pricePerUnit: { type: Number },
-  supplier:     { type: String },
-  expiryDate:   { type: Date },
-  location:     { type: String },
-  lastUpdated:  { type: Date, default: Date.now },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const Inventory = sequelize.define('Inventory', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    itemName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.ENUM('Feed', 'Medicine', 'Equipment', 'Tools', 'Other'),
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    unit: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    minQuantity: {
+      type: DataTypes.FLOAT,
+      defaultValue: 5,
+    },
+    pricePerUnit: {
+      type: DataTypes.FLOAT,
+    },
+    supplier: {
+      type: DataTypes.STRING,
+    },
+    expiryDate: {
+      type: DataTypes.DATE,
+    },
+    location: {
+      type: DataTypes.STRING,
+    },
+    lastUpdated: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  });
 
-module.exports = mongoose.model('Inventory', inventorySchema);
+  return Inventory;
+};

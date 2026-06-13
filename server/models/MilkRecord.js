@@ -1,20 +1,46 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const milkRecordSchema = new mongoose.Schema({
-  animal:       { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', required: true },
-  date:         { type: Date, required: true, default: Date.now },
-  morningMilk:  { type: Number, default: 0 },
-  eveningMilk:  { type: Number, default: 0 },
-  totalMilk:    { type: Number, default: 0 },
-  quality:      { type: String, enum: ['A+', 'A', 'B', 'C'], default: 'A' },
-  fatContent:   { type: Number },
-  notes:        { type: String },
-  recordedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const MilkRecord = sequelize.define('MilkRecord', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    morningMilk: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    eveningMilk: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    totalMilk: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    quality: {
+      type: DataTypes.ENUM('A+', 'A', 'B', 'C'),
+      defaultValue: 'A',
+    },
+    fatContent: {
+      type: DataTypes.FLOAT,
+    },
+    notes: {
+      type: DataTypes.TEXT,
+    },
+  }, {
+    hooks: {
+      beforeSave: (record) => {
+        record.totalMilk = (record.morningMilk || 0) + (record.eveningMilk || 0);
+      },
+    },
+  });
 
-milkRecordSchema.pre('save', function(next) {
-  this.totalMilk = this.morningMilk + this.eveningMilk;
-  next();
-});
-
-module.exports = mongoose.model('MilkRecord', milkRecordSchema);
+  return MilkRecord;
+};

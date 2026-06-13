@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const { User } = require('../models');
 const generateToken = require('../utils/generateToken');
 
 // @desc    Register user
@@ -6,11 +6,11 @@ const generateToken = require('../utils/generateToken');
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role, phone } = req.body;
-    const exists = await User.findOne({ email });
+    const exists = await User.findOne({ where: { email } });
     if (exists) return res.status(400).json({ success: false, message: 'Email already registered' });
     const user = await User.create({ name, email, password, role, phone });
-    const token = generateToken(user._id);
-    res.status(201).json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    const token = generateToken(user.id);
+    res.status(201).json({ success: true, token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -22,13 +22,13 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ where: { email } });
     if (!user || !(await user.matchPassword(password)))
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     user.lastLogin = Date.now();
-    await user.save({ validateBeforeSave: false });
-    const token = generateToken(user._id);
-    res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar } });
+    await user.save({ validate: false });
+    const token = generateToken(user.id);
+    res.json({ success: true, token, user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar } });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -37,8 +37,12 @@ exports.login = async (req, res) => {
 // @desc    Get current user
 // @route   GET /api/auth/me
 exports.getMe = async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
-  res.json({ success: true, data: user });
+  try {
+    const user = await User.findByPk(req.user.id, { attributes: { exclude: ['password'] } });
+    res.json({ success: true, data: user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
 
 // @desc    Update profile
@@ -46,7 +50,8 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, phone } = req.body;
-    const user = await User.findByIdAndUpdate(req.user.id, { name, phone }, { new: true, runValidators: true }).select('-password');
+    await User.update({ name, phone }, { where: { id: req.user.id } });
+    const user = await User.findByPk(req.user.id, { attributes: { exclude: ['password'] } });
     res.json({ success: true, data: user });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -58,10 +63,10 @@ exports.updateProfile = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user.id);
+    const user = await User.findByPk(req.user.id);
     if (!(await user.matchPassword(currentPassword)))
       return res.status(401).json({ success: false, message: 'Current password incorrect' });
-    user.password = newPassword;
+    user.password = newPassword; // the hook will hash this
     await user.save();
     res.json({ success: true, message: 'Password updated successfully' });
   } catch (err) {

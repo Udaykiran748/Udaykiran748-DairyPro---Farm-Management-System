@@ -1,18 +1,52 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const saleSchema = new mongoose.Schema({
-  customer:     { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
-  date:         { type: Date, required: true, default: Date.now },
-  quantity:     { type: Number, required: true },
-  ratePerLitre: { type: Number, required: true },
-  totalAmount:  { type: Number, required: true },
-  paidAmount:   { type: Number, default: 0 },
-  pendingAmount:{ type: Number, default: 0 },
-  paymentMode:  { type: String, enum: ['Cash', 'Online', 'Credit'], default: 'Cash' },
-  paymentStatus:{ type: String, enum: ['Paid', 'Pending', 'Partial'], default: 'Pending' },
-  invoiceNo:    { type: String },
-  notes:        { type: String },
-  recordedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const Sale = sequelize.define('Sale', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    quantity: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    ratePerLitre: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    totalAmount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    paidAmount: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    pendingAmount: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    paymentMode: {
+      type: DataTypes.ENUM('Cash', 'Online', 'Credit'),
+      defaultValue: 'Cash',
+    },
+    paymentStatus: {
+      type: DataTypes.ENUM('Paid', 'Pending', 'Partial'),
+      defaultValue: 'Pending',
+    },
+    invoiceNo: {
+      type: DataTypes.STRING,
+    },
+    notes: {
+      type: DataTypes.TEXT,
+    },
+  });
 
-module.exports = mongoose.model('Sale', saleSchema);
+  return Sale;
+};

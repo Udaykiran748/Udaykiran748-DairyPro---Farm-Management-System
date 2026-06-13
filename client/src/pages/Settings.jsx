@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import toast from 'react-hot-toast'
+import '../styles/Settings.css'
 
 export default function Settings() {
   const { dark, toggle } = useTheme()
@@ -28,52 +29,52 @@ export default function Settings() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <h1 className="page-title">Settings</h1>
+    <div className="settings-page">
+      <h1 className="settings-title">Settings</h1>
 
-      <div className="glass-card p-6">
-        <h2 className="section-title mb-4">Profile</h2>
-        <form onSubmit={handleProfile} className="space-y-4">
+      <div className="card settings-card">
+        <h2 className="section-title">Profile</h2>
+        <form onSubmit={handleProfile} className="settings-form">
           {[{l:'Full Name',k:'name'},{l:'Phone',k:'phone',t:'tel'}].map(({l,k,t='text'})=>(
-            <div key={k}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{l}</label>
-              <input type={t} value={profile[k]||''} onChange={e=>setProfile(p=>({...p,[k]:e.target.value}))} className="input-field" />
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}</label>
+              <input type={t} value={profile[k]||''} onChange={e=>setProfile(p=>({...p,[k]:e.target.value}))} style={{ width: '100%' }} />
             </div>
           ))}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (read-only)</label>
-            <input value={user?.email||''} className="input-field opacity-60 cursor-not-allowed" readOnly />
+          <div className="form-group">
+            <label className="form-label">Email (read-only)</label>
+            <input value={user?.email||''} style={{ width: '100%' }} className="input-readonly" readOnly />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-            <input value={user?.role||''} className="input-field opacity-60 cursor-not-allowed capitalize" readOnly />
+          <div className="form-group">
+            <label className="form-label">Role</label>
+            <input value={user?.role||''} style={{ width: '100%' }} className="input-readonly input-capitalize" readOnly />
           </div>
-          <button type="submit" disabled={saving} className="btn-primary">{saving?'Saving...':'Save Profile'}</button>
+          <button type="submit" disabled={saving} className="btn btn-primary form-submit-btn">{saving?'Saving...':'Save Profile'}</button>
         </form>
       </div>
 
-      <div className="glass-card p-6">
-        <h2 className="section-title mb-4">Change Password</h2>
-        <form onSubmit={handlePassword} className="space-y-4">
+      <div className="card settings-card">
+        <h2 className="section-title">Change Password</h2>
+        <form onSubmit={handlePassword} className="settings-form">
           {[{l:'Current Password',k:'currentPassword'},{l:'New Password',k:'newPassword'},{l:'Confirm New Password',k:'confirm'}].map(({l,k})=>(
-            <div key={k}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{l}</label>
-              <input type="password" value={passwords[k]} onChange={e=>setPasswords(p=>({...p,[k]:e.target.value}))} className="input-field" placeholder="••••••••" required />
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}</label>
+              <input type="password" value={passwords[k]} onChange={e=>setPasswords(p=>({...p,[k]:e.target.value}))} style={{ width: '100%' }} placeholder="••••••••" required />
             </div>
           ))}
-          <button type="submit" disabled={saving} className="btn-primary">{saving?'Changing...':'Change Password'}</button>
+          <button type="submit" disabled={saving} className="btn btn-primary form-submit-btn">{saving?'Changing...':'Change Password'}</button>
         </form>
       </div>
 
-      <div className="glass-card p-6">
-        <h2 className="section-title mb-4">Appearance</h2>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-gray-800 dark:text-gray-100">{dark ? 'Dark Mode' : 'Light Mode'}</div>
-            <div className="text-sm text-gray-500">Switch between dark and light theme</div>
+      <div className="card settings-card">
+        <h2 className="section-title">Appearance</h2>
+        <div className="appearance-row">
+          <div className="appearance-info">
+            <div className="appearance-label">{dark ? 'Dark Mode' : 'Light Mode'}</div>
+            <div className="appearance-desc">Switch between dark and light theme</div>
           </div>
-          <button onClick={toggle} className={`relative w-14 h-7 rounded-full transition-colors ${dark?'bg-primary-600':'bg-gray-300'}`}>
-            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${dark?'translate-x-8':'translate-x-1'}`} />
+          <button onClick={toggle} className={`theme-toggle-btn ${dark?'theme-toggle-dark':'theme-toggle-light'}`}>
+            <div className={`theme-toggle-circle ${dark?'theme-toggle-circle-dark':'theme-toggle-circle-light'}`} />
           </button>
         </div>
       </div>

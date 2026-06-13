@@ -1,16 +1,52 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const customerSchema = new mongoose.Schema({
-  customerId:     { type: String, required: true, unique: true },
-  name:           { type: String, required: true },
-  type:           { type: String, enum: ['Retail', 'Wholesale', 'Cooperative'], default: 'Retail' },
-  phone:          { type: String, required: true },
-  email:          { type: String },
-  address:        { type: String },
-  dailyQuantity:  { type: Number, default: 0 },
-  ratePerLitre:   { type: Number, required: true },
-  pendingAmount:  { type: Number, default: 0 },
-  isActive:       { type: Boolean, default: true },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const Customer = sequelize.define('Customer', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    customerId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    type: {
+      type: DataTypes.ENUM('Retail', 'Wholesale', 'Cooperative'),
+      defaultValue: 'Retail',
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+    },
+    address: {
+      type: DataTypes.TEXT,
+    },
+    dailyQuantity: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    ratePerLitre: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    pendingAmount: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+  });
 
-module.exports = mongoose.model('Customer', customerSchema);
+  return Customer;
+};

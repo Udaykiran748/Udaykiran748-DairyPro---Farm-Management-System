@@ -7,26 +7,33 @@ const Topbar = ({ onMenuToggle, title }) => {
   const [notif, setNotif] = useState(3)
 
   return (
-    <header className="sticky top-0 z-20 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <button onClick={onMenuToggle} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors lg:hidden">
-          <HiMenu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+    <header className="topbar">
+      <div className="topbar-left">
+        <button onClick={onMenuToggle} className="topbar-menu-btn">
+          <HiMenu style={{ width: '1.25rem', height: '1.25rem' }} />
         </button>
-        <h2 className="font-display font-semibold text-gray-800 dark:text-gray-100 text-lg">{title}</h2>
+        <h2 className="topbar-title">{title}</h2>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative hidden md:block">
-          <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input type="text" placeholder="Search..." className="input-field text-sm pl-9 py-2 w-56" />
+      <div className="topbar-right">
+        {/* We can re-use base elements like input */}
+        <div style={{ position: 'relative', display: 'none' /* hidden on mobile */ }} className="md-flex-search">
+          <HiSearch style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+          <input type="text" placeholder="Search..." style={{ paddingLeft: '2.25rem', width: '14rem' }} />
         </div>
-        <button onClick={toggle} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          {dark ? <HiSun className="w-5 h-5 text-yellow-400" /> : <HiMoon className="w-5 h-5 text-gray-600" />}
+        <button onClick={toggle} className="topbar-icon-btn">
+          {dark ? <HiSun style={{ width: '1.25rem', height: '1.25rem', color: 'var(--color-warning)' }} /> : <HiMoon style={{ width: '1.25rem', height: '1.25rem' }} />}
         </button>
-        <button className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <HiBell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        <button className="topbar-icon-btn" style={{ position: 'relative' }}>
+          <HiBell style={{ width: '1.25rem', height: '1.25rem' }} />
           {notif > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{notif}</span>
+            <span style={{ 
+              position: 'absolute', top: '4px', right: '4px', 
+              width: '16px', height: '16px', 
+              backgroundColor: 'var(--color-danger)', color: 'white', 
+              fontSize: '9px', fontWeight: 'bold', 
+              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+            }}>{notif}</span>
           )}
         </button>
       </div>

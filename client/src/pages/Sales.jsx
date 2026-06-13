@@ -5,24 +5,15 @@ import api from '../services/api'
 import Modal from '../components/common/Modal'
 import Badge from '../components/common/Badge'
 import toast from 'react-hot-toast'
+import '../styles/Sales.css'
 
-const DEMO_CUSTOMERS = [
-  {id:'C001',name:'Sharma Dairy',type:'Wholesale',phone:'9812345678',dailyQuantity:40,ratePerLitre:52,pendingAmount:1040},
-  {id:'C002',name:'Ravi Household',type:'Retail',phone:'9723456789',dailyQuantity:3,ratePerLitre:60,pendingAmount:0},
-  {id:'C003',name:'School Canteen',type:'Retail',phone:'9634567890',dailyQuantity:8,ratePerLitre:55,pendingAmount:220},
-]
-const DEMO_SALES = [
-  {id:1,customer:{name:'Sharma Dairy'},date:'2025-05-07',quantity:40,ratePerLitre:52,totalAmount:2080,paidAmount:2080,pendingAmount:0,paymentStatus:'Paid',invoiceNo:'INV-001'},
-  {id:2,customer:{name:'Ravi Household'},date:'2025-05-07',quantity:3,ratePerLitre:60,totalAmount:180,paidAmount:180,pendingAmount:0,paymentStatus:'Paid',invoiceNo:'INV-002'},
-  {id:3,customer:{name:'School Canteen'},date:'2025-05-07',quantity:8,ratePerLitre:55,totalAmount:440,paidAmount:220,pendingAmount:220,paymentStatus:'Partial',invoiceNo:'INV-003'},
-]
 const SALE_EMPTY = { customerId:'', date:new Date().toISOString().slice(0,10), quantity:'', ratePerLitre:'', paidAmount:'', paymentMode:'Cash', notes:'' }
 const CUST_EMPTY = { customerId:'', name:'', type:'Retail', phone:'', email:'', address:'', dailyQuantity:'', ratePerLitre:'', }
 
 export default function Sales() {
   const [tab, setTab] = useState('sales')
-  const [sales, setSales] = useState(DEMO_SALES)
-  const [customers, setCustomers] = useState(DEMO_CUSTOMERS)
+  const [sales, setSales] = useState([])
+  const [customers, setCustomers] = useState([])
   const [saleModal, setSaleModal] = useState(false)
   const [custModal, setCustModal] = useState(false)
   const [saleForm, setSaleForm] = useState(SALE_EMPTY)
@@ -45,75 +36,85 @@ export default function Sales() {
     e.preventDefault(); setSaving(true)
     const total = Number(saleForm.quantity) * Number(saleForm.ratePerLitre)
     const payload = { ...saleForm, totalAmount: total, pendingAmount: total - (Number(saleForm.paidAmount)||0) }
-    try { const r = await api.post('/sales', {...payload, customer: saleForm.customerId}); setSales(prev=>[r.data.data,...prev]); toast.success('Sale added!') }
-    catch { setSales(prev=>[{...payload, id:Date.now(), customer:{name:customers.find(c=>(c._id||c.id)===saleForm.customerId)?.name||'Customer'}, invoiceNo:'INV-'+Date.now()},...prev]); toast.success('Added! (demo)') }
-    finally { setSaving(false); setSaleModal(false) }
+    try { 
+      const r = await api.post('/sales', {...payload, customer: saleForm.customerId}); 
+      setSales(prev=>[r.data.data,...prev]); 
+      toast.success('Sale added!') 
+      setSaleModal(false)
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'Failed to save sale')
+    } finally { setSaving(false) }
   }
 
   const handleSaveCust = async (e) => {
     e.preventDefault(); setSaving(true)
-    try { const r = await api.post('/customers', custForm); setCustomers(prev=>[r.data.data,...prev]); toast.success('Customer added!') }
-    catch { setCustomers(prev=>[{...custForm,id:Date.now()},...prev]); toast.success('Added! (demo)') }
-    finally { setSaving(false); setCustModal(false) }
+    try { 
+      const r = await api.post('/customers', custForm); 
+      setCustomers(prev=>[r.data.data,...prev]); 
+      toast.success('Customer added!') 
+      setCustModal(false)
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'Failed to save customer')
+    } finally { setSaving(false) }
   }
 
   const statusColor = { Paid:'green', Pending:'red', Partial:'yellow' }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div><h1 className="page-title">Sales & Billing</h1><p className="text-sm text-gray-500 mt-0.5">Manage customers, sales, and invoices</p></div>
-        <div className="flex gap-2">
-          <button onClick={()=>{setCustForm(CUST_EMPTY);setCustModal(true)}} className="btn-ghost flex items-center gap-2"><HiPlus className="w-4 h-4" />Add Customer</button>
-          <button onClick={()=>{setSaleForm(SALE_EMPTY);setSaleModal(true)}} className="btn-primary flex items-center gap-2"><HiPlus className="w-5 h-5" />New Sale</button>
+    <div className="sales-page">
+      <div className="sales-header">
+        <div><h1 className="page-title">Sales & Billing</h1><p className="page-subtitle">Manage customers, sales, and invoices</p></div>
+        <div className="header-actions">
+          <button onClick={()=>{setCustForm(CUST_EMPTY);setCustModal(true)}} className="btn btn-outline"><HiPlus style={{ width: '1rem', height: '1rem', marginRight: '0.25rem' }} />Add Customer</button>
+          <button onClick={()=>{setSaleForm(SALE_EMPTY);setSaleModal(true)}} className="btn btn-primary"><HiPlus style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} />New Sale</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="stats-grid-4">
         {[
-          {label:'Total Revenue',value:`₹${totalRevenue.toLocaleString('en-IN')}`,icon:'💰',color:'bg-primary-500'},
-          {label:'Total Qty Sold',value:`${totalQty}L`,icon:'🥛',color:'bg-blue-500'},
-          {label:'Pending Dues',value:`₹${totalPending.toLocaleString('en-IN')}`,icon:'⏳',color:'bg-red-500'},
-          {label:'Customers',value:customers.length,icon:'👥',color:'bg-purple-500'},
+          {label:'Total Revenue',value:`₹${totalRevenue.toLocaleString('en-IN')}`,icon:'💰',colorClass:'stat-icon-primary'},
+          {label:'Total Qty Sold',value:`${totalQty}L`,icon:'🥛',colorClass:'stat-icon-blue'},
+          {label:'Pending Dues',value:`₹${totalPending.toLocaleString('en-IN')}`,icon:'⏳',colorClass:'stat-icon-red'},
+          {label:'Customers',value:customers.length,icon:'👥',colorClass:'stat-icon-purple'},
         ].map((s,i)=>(
-          <motion.div key={i} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:i*0.1}} className="glass-card p-4">
-            <div className={`w-10 h-10 ${s.color} rounded-xl flex items-center justify-center text-xl text-white mb-3`}>{s.icon}</div>
-            <div className="text-xl font-display font-bold text-gray-800 dark:text-gray-100">{s.value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
+          <motion.div key={i} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:i*0.1}} className="card stat-card-custom">
+            <div className={`stat-icon-wrapper ${s.colorClass}`}>{s.icon}</div>
+            <div className="stat-value">{s.value}</div>
+            <div className="stat-label">{s.label}</div>
           </motion.div>
         ))}
       </div>
 
-      <div className="flex gap-2 border-b border-gray-100 dark:border-gray-800">
+      <div className="tabs-container">
         {['sales','customers'].map(t=>(
           <button key={t} onClick={()=>setTab(t)}
-            className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-all capitalize ${tab===t ? 'border-primary-600 text-primary-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            className={`tab-btn ${tab===t ? 'active' : ''}`}>
             {t === 'sales' ? '🧾 Sales Records' : '👥 Customers'}
           </button>
         ))}
       </div>
 
       {tab === 'sales' ? (
-        <div className="glass-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead><tr className="bg-primary-50 dark:bg-gray-800/60">
+        <div className="card table-wrapper">
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead><tr>
                 {['Invoice','Customer','Date','Qty','Rate','Total','Paid','Pending','Status'].map(h=>(
-                  <th key={h} className="px-4 py-3 text-left text-xs font-bold text-primary-700 dark:text-primary-300 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr></thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+              <tbody>
                 {sales.map(s=>(
-                  <tr key={s._id||s.id} className="hover:bg-primary-50/40 dark:hover:bg-gray-800/40 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{s.invoiceNo}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-100">{s.customer?.name}</td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{s.date?.slice(0,10)}</td>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{s.quantity}L</td>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">₹{s.ratePerLitre}/L</td>
-                    <td className="px-4 py-3 font-bold text-gray-800 dark:text-gray-100">₹{s.totalAmount?.toLocaleString('en-IN')}</td>
-                    <td className="px-4 py-3 text-primary-600 dark:text-primary-400">₹{s.paidAmount?.toLocaleString('en-IN')}</td>
-                    <td className="px-4 py-3 text-red-500">{s.pendingAmount > 0 ? `₹${s.pendingAmount.toLocaleString('en-IN')}` : '—'}</td>
-                    <td className="px-4 py-3"><Badge label={s.paymentStatus} color={statusColor[s.paymentStatus]||'gray'} /></td>
+                  <tr key={s._id||s.id}>
+                    <td className="cell-invoice">{s.invoiceNo}</td>
+                    <td className="cell-customer">{s.customer?.name}</td>
+                    <td className="cell-nowrap">{s.date?.slice(0,10)}</td>
+                    <td>{s.quantity}L</td>
+                    <td>₹{s.ratePerLitre}/L</td>
+                    <td className="cell-bold">₹{s.totalAmount?.toLocaleString('en-IN')}</td>
+                    <td className="cell-paid">₹{s.paidAmount?.toLocaleString('en-IN')}</td>
+                    <td className={s.pendingAmount > 0 ? 'cell-pending' : ''}>{s.pendingAmount > 0 ? `₹${s.pendingAmount.toLocaleString('en-IN')}` : '—'}</td>
+                    <td><Badge label={s.paymentStatus} color={statusColor[s.paymentStatus]||'gray'} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -121,23 +122,23 @@ export default function Sales() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="customers-grid">
           {customers.map((c,i)=>(
-            <motion.div key={c._id||c.id} initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} transition={{delay:i*0.07}} className="glass-card p-5">
-              <div className="flex items-center justify-between mb-3">
+            <motion.div key={c._id||c.id} initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} transition={{delay:i*0.07}} className="card customer-card">
+              <div className="customer-header-row">
                 <div>
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">{c.name}</h3>
+                  <h3 className="customer-name">{c.name}</h3>
                   <Badge label={c.type} color={c.type==='Wholesale'?'purple':'blue'} />
                 </div>
-                <div className="text-2xl font-display font-bold text-primary-600 dark:text-primary-400">{c.dailyQuantity}L<span className="text-xs font-normal text-gray-400">/day</span></div>
+                <div className="customer-qty">{c.dailyQuantity}L<span className="customer-qty-unit">/day</span></div>
               </div>
-              <div className="space-y-1.5 text-sm text-gray-500">
+              <div className="customer-details">
                 <div>📞 {c.phone}</div>
                 <div>💰 Rate: ₹{c.ratePerLitre}/L</div>
               </div>
               {c.pendingAmount > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <span className="text-xs text-red-500 font-medium">⚠️ Pending: ₹{c.pendingAmount.toLocaleString('en-IN')}</span>
+                <div className="customer-pending-alert">
+                  ⚠️ Pending: ₹{c.pendingAmount.toLocaleString('en-IN')}
                 </div>
               )}
             </motion.div>
@@ -146,83 +147,81 @@ export default function Sales() {
       )}
 
       <Modal isOpen={saleModal} onClose={()=>setSaleModal(false)} title="Record Sale">
-        <form onSubmit={handleSaveSale} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
-            <select value={saleForm.customerId} onChange={e=>upS('customerId',e.target.value)} className="input-field" required>
+        <form onSubmit={handleSaveSale} className="modal-form">
+          <div className="form-group">
+            <label className="form-label">Customer</label>
+            <select value={saleForm.customerId} onChange={e=>upS('customerId',e.target.value)} style={{ width: '100%' }} required>
               <option value="">Select Customer</option>
               {customers.map(c=><option key={c._id||c.id} value={c._id||c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-              <input type="date" value={saleForm.date} onChange={e=>upS('date',e.target.value)} className="input-field" required />
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Date</label>
+              <input type="date" value={saleForm.date} onChange={e=>upS('date',e.target.value)} style={{ width: '100%' }} required />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity (L)</label>
-              <input type="number" step="0.1" value={saleForm.quantity} onChange={e=>upS('quantity',e.target.value)} className="input-field" placeholder="0" required />
+            <div className="form-group">
+              <label className="form-label">Quantity (L)</label>
+              <input type="number" step="0.1" value={saleForm.quantity} onChange={e=>upS('quantity',e.target.value)} style={{ width: '100%' }} placeholder="0" required />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate (₹/L)</label>
-              <input type="number" step="0.5" value={saleForm.ratePerLitre} onChange={e=>upS('ratePerLitre',e.target.value)} className="input-field" placeholder="55" required />
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Rate (₹/L)</label>
+              <input type="number" step="0.5" value={saleForm.ratePerLitre} onChange={e=>upS('ratePerLitre',e.target.value)} style={{ width: '100%' }} placeholder="55" required />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paid Amount (₹)</label>
-              <input type="number" value={saleForm.paidAmount} onChange={e=>upS('paidAmount',e.target.value)} className="input-field" placeholder="0" />
+            <div className="form-group">
+              <label className="form-label">Paid Amount (₹)</label>
+              <input type="number" value={saleForm.paidAmount} onChange={e=>upS('paidAmount',e.target.value)} style={{ width: '100%' }} placeholder="0" />
             </div>
           </div>
           {saleForm.quantity && saleForm.ratePerLitre && (
-            <div className="p-3 bg-primary-50 dark:bg-primary-950/30 rounded-xl text-center">
-              <span className="font-bold text-primary-700 dark:text-primary-300">
-                Total: ₹{(Number(saleForm.quantity)*Number(saleForm.ratePerLitre)).toLocaleString('en-IN')}
-              </span>
+            <div className="total-display">
+              Total: ₹{(Number(saleForm.quantity)*Number(saleForm.ratePerLitre)).toLocaleString('en-IN')}
             </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Mode</label>
-            <select value={saleForm.paymentMode} onChange={e=>upS('paymentMode',e.target.value)} className="input-field">
+          <div className="form-group">
+            <label className="form-label">Payment Mode</label>
+            <select value={saleForm.paymentMode} onChange={e=>upS('paymentMode',e.target.value)} style={{ width: '100%' }}>
               {['Cash','Online','Credit'].map(m=><option key={m} value={m}>{m}</option>)}
             </select>
           </div>
-          <div className="flex gap-3 justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
-            <button type="button" onClick={()=>setSaleModal(false)} className="btn-ghost">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary">{saving?'Saving...':'Record Sale'}</button>
+          <div className="modal-footer">
+            <button type="button" onClick={()=>setSaleModal(false)} className="btn btn-outline">Cancel</button>
+            <button type="submit" disabled={saving} className="btn btn-primary">{saving?'Saving...':'Record Sale'}</button>
           </div>
         </form>
       </Modal>
 
       <Modal isOpen={custModal} onClose={()=>setCustModal(false)} title="Add Customer" size="lg">
-        <form onSubmit={handleSaveCust} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSaveCust} className="modal-form-grid-responsive">
           {[{label:'Customer ID',key:'customerId'},{label:'Name',key:'name'},{label:'Phone',key:'phone',type:'tel'},{label:'Email',key:'email',type:'email'}].map(({label,key,type='text'})=>(
-            <div key={key}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-              <input type={type} value={custForm[key]||''} onChange={e=>upC(key,e.target.value)} className="input-field" required={['customerId','name','phone'].includes(key)} />
+            <div className="form-group" key={key}>
+              <label className="form-label">{label}</label>
+              <input type={type} value={custForm[key]||''} onChange={e=>upC(key,e.target.value)} style={{ width: '100%' }} required={['customerId','name','phone'].includes(key)} />
             </div>
           ))}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
-            <select value={custForm.type} onChange={e=>upC('type',e.target.value)} className="input-field">
+          <div className="form-group">
+            <label className="form-label">Type</label>
+            <select value={custForm.type} onChange={e=>upC('type',e.target.value)} style={{ width: '100%' }}>
               {['Retail','Wholesale','Cooperative'].map(t=><option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate (₹/L)</label>
-            <input type="number" step="0.5" value={custForm.ratePerLitre||''} onChange={e=>upC('ratePerLitre',e.target.value)} className="input-field" placeholder="55" required />
+          <div className="form-group">
+            <label className="form-label">Rate (₹/L)</label>
+            <input type="number" step="0.5" value={custForm.ratePerLitre||''} onChange={e=>upC('ratePerLitre',e.target.value)} style={{ width: '100%' }} placeholder="55" required />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Daily Qty (L)</label>
-            <input type="number" value={custForm.dailyQuantity||''} onChange={e=>upC('dailyQuantity',e.target.value)} className="input-field" placeholder="10" />
+          <div className="form-group">
+            <label className="form-label">Daily Qty (L)</label>
+            <input type="number" value={custForm.dailyQuantity||''} onChange={e=>upC('dailyQuantity',e.target.value)} style={{ width: '100%' }} placeholder="10" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
-            <input type="text" value={custForm.address||''} onChange={e=>upC('address',e.target.value)} className="input-field" />
+          <div className="form-group">
+            <label className="form-label">Address</label>
+            <input type="text" value={custForm.address||''} onChange={e=>upC('address',e.target.value)} style={{ width: '100%' }} />
           </div>
-          <div className="sm:col-span-2 flex gap-3 justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
-            <button type="button" onClick={()=>setCustModal(false)} className="btn-ghost">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary">{saving?'Saving...':'Add Customer'}</button>
+          <div className="form-full-width modal-footer">
+            <button type="button" onClick={()=>setCustModal(false)} className="btn btn-outline">Cancel</button>
+            <button type="submit" disabled={saving} className="btn btn-primary">{saving?'Saving...':'Add Customer'}</button>
           </div>
         </form>
       </Modal>

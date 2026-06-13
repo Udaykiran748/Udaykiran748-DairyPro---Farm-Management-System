@@ -1,14 +1,39 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const feedScheduleSchema = new mongoose.Schema({
-  feedType:     { type: String, required: true },
-  quantity:     { type: Number, required: true },
-  unit:         { type: String, enum: ['kg', 'g', 'litre'], default: 'kg' },
-  time:         { type: String, required: true },
-  animals:      [{ type: mongoose.Schema.Types.ObjectId, ref: 'Animal' }],
-  date:         { type: Date, default: Date.now },
-  notes:        { type: String },
-  recordedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const FeedRecord = sequelize.define('FeedRecord', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    feedType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    unit: {
+      type: DataTypes.ENUM('kg', 'g', 'litre'),
+      defaultValue: 'kg',
+    },
+    time: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    animals: {
+      type: DataTypes.JSON, // Array of animal IDs
+    },
+    date: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    notes: {
+      type: DataTypes.TEXT,
+    },
+  });
 
-module.exports = mongoose.model('FeedRecord', feedScheduleSchema);
+  return FeedRecord;
+};

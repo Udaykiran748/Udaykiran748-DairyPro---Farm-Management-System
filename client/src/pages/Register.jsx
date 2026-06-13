@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { HiMail, HiLockClosed, HiUser, HiPhone } from 'react-icons/hi'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
+import '../styles/Auth.css'
 
 const ROLES = ['admin', 'farmer', 'worker', 'accountant']
 
@@ -31,15 +32,32 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-emerald-50 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <div className="glass-card p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-3">🌾</div>
-            <h1 className="text-2xl font-display font-bold text-gray-800 dark:text-gray-100">Create Account</h1>
-            <p className="text-gray-500 text-sm mt-1">Join DairyPro today</p>
+    <div className="auth-layout">
+      <div className="auth-image-side">
+        <div className="auth-image-overlay">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}>
+            <div className="auth-brand-badge">DairyPro App</div>
+            <h2 className="auth-quote">"Join our community of modern farmers leveraging technology for better yields."</h2>
+            <p className="auth-quote-author">— The Future of Farm Management</p>
+          </motion.div>
+        </div>
+      </div>
+      
+      <div className="auth-form-side">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }} 
+          animate={{ opacity: 1, x: 0 }} 
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} 
+          className="auth-form-container"
+        >
+          <div className="auth-header" style={{ marginBottom: '1.5rem' }}>
+            <div className="auth-icon-wrapper" style={{ width: '3rem', height: '3rem', margin: '0 auto 1rem' }}>
+              <span className="auth-icon" style={{ fontSize: '1.5rem' }}>🌾</span>
+            </div>
+            <h1 className="auth-title">Create Account</h1>
+            <p className="auth-subtitle">Join DairyPro today</p>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="auth-form" style={{ gap: '1rem' }}>
             {[
               { key: 'name', label: 'Full Name', icon: HiUser, type: 'text', placeholder: 'Ramesh Kumar' },
               { key: 'email', label: 'Email', icon: HiMail, type: 'email', placeholder: 'you@farm.com' },
@@ -47,31 +65,31 @@ export default function Register() {
               { key: 'password', label: 'Password', icon: HiLockClosed, type: 'password', placeholder: '••••••••' },
               { key: 'confirm', label: 'Confirm Password', icon: HiLockClosed, type: 'password', placeholder: '••••••••' },
             ].map(({ key, label, icon: Icon, type, placeholder }) => (
-              <div key={key}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
-                <div className="relative">
-                  <Icon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <div key={key} className="auth-form-group">
+                <label className="auth-label">{label}</label>
+                <div className="auth-input-wrapper">
                   <input type={type} value={form[key]} onChange={e => up(key, e.target.value)}
-                    className="input-field pl-10" placeholder={placeholder} required />
+                    className="auth-input" placeholder={placeholder} required />
+                  <Icon className="auth-input-icon" />
                 </div>
               </div>
             ))}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Role</label>
-              <select value={form.role} onChange={e => up('role', e.target.value)} className="input-field">
+            <div className="auth-form-group">
+              <label className="auth-label">Role</label>
+              <select value={form.role} onChange={e => up('role', e.target.value)} className="auth-input" style={{ paddingLeft: '1rem' }}>
                 {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
               </select>
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
-              {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
+            <button type="submit" disabled={loading} className="auth-submit-btn" style={{ marginTop: '0.5rem' }}>
+              {loading ? <div className="spinner" /> : null}
               {loading ? 'Creating...' : 'Create Account'}
             </button>
           </form>
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Already have an account? <Link to="/login" className="text-primary-600 font-semibold hover:underline">Sign in</Link>
+          <p className="auth-footer" style={{ marginTop: '1.5rem' }}>
+            Already have an account? <Link to="/login" className="auth-link">Sign in</Link>
           </p>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   )
 }

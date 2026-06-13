@@ -1,13 +1,39 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const feedInventorySchema = new mongoose.Schema({
-  feedType:      { type: String, required: true },
-  currentStock:  { type: Number, required: true, default: 0 },
-  unit:          { type: String, enum: ['kg', 'quintal', 'bag'], default: 'kg' },
-  minStock:      { type: Number, default: 50 },
-  pricePerUnit:  { type: Number },
-  supplier:      { type: String },
-  lastRestocked: { type: Date },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const FeedInventory = sequelize.define('FeedInventory', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    feedType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    currentStock: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    unit: {
+      type: DataTypes.ENUM('kg', 'quintal', 'bag'),
+      defaultValue: 'kg',
+    },
+    minStock: {
+      type: DataTypes.FLOAT,
+      defaultValue: 50,
+    },
+    pricePerUnit: {
+      type: DataTypes.FLOAT,
+    },
+    supplier: {
+      type: DataTypes.STRING,
+    },
+    lastRestocked: {
+      type: DataTypes.DATE,
+    },
+  });
 
-module.exports = mongoose.model('FeedInventory', feedInventorySchema);
+  return FeedInventory;
+};

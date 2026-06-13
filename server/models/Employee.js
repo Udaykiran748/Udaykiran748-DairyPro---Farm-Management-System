@@ -1,17 +1,55 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const employeeSchema = new mongoose.Schema({
-  employeeId:   { type: String, required: true, unique: true },
-  name:         { type: String, required: true },
-  role:         { type: String, required: true },
-  phone:        { type: String, required: true },
-  email:        { type: String },
-  address:      { type: String },
-  salary:       { type: Number, required: true },
-  joinDate:     { type: Date, required: true },
-  isActive:     { type: Boolean, default: true },
-  avatar:       { type: String, default: '' },
-  tasks:        [{ task: String, dueDate: Date, status: String }],
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const Employee = sequelize.define('Employee', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    employeeId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+    },
+    address: {
+      type: DataTypes.TEXT,
+    },
+    salary: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    joinDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    avatar: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    tasks: {
+      type: DataTypes.JSON, // Stores array of objects
+    },
+  });
 
-module.exports = mongoose.model('Employee', employeeSchema);
+  return Employee;
+};

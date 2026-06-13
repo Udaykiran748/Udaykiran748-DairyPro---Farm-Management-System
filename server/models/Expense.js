@@ -1,14 +1,40 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const expenseSchema = new mongoose.Schema({
-  category:   { type: String, enum: ['Feed', 'Medicine', 'Salary', 'Electricity', 'Water', 'Maintenance', 'Equipment', 'Other'], required: true },
-  amount:     { type: Number, required: true },
-  date:       { type: Date, required: true, default: Date.now },
-  description:{ type: String, required: true },
-  paidTo:     { type: String },
-  paymentMode:{ type: String, enum: ['Cash', 'Online', 'Cheque'], default: 'Cash' },
-  receipt:    { type: String },
-  recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+module.exports = (sequelize, Sequelize) => {
+  const Expense = sequelize.define('Expense', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    category: {
+      type: DataTypes.ENUM('Feed', 'Medicine', 'Salary', 'Electricity', 'Water', 'Maintenance', 'Equipment', 'Other'),
+      allowNull: false,
+    },
+    amount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    paidTo: {
+      type: DataTypes.STRING,
+    },
+    paymentMode: {
+      type: DataTypes.ENUM('Cash', 'Online', 'Cheque'),
+      defaultValue: 'Cash',
+    },
+    receipt: {
+      type: DataTypes.STRING,
+    },
+  });
 
-module.exports = mongoose.model('Expense', expenseSchema);
+  return Expense;
+};

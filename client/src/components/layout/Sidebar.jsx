@@ -1,5 +1,5 @@
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import {
   HiHome, HiViewGrid, HiStar, HiBeaker, HiHeart, HiUsers,
@@ -8,6 +8,7 @@ import {
 } from 'react-icons/hi'
 import { MdGrass } from 'react-icons/md'
 import toast from 'react-hot-toast'
+import ConfirmDialog from '../common/ConfirmDialog'
 
 const NAV = [
   { label: 'Home', to: '/', icon: HiHome },
@@ -31,6 +32,7 @@ const NAV = [
 const Sidebar = ({ open, onClose }) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -40,45 +42,33 @@ const Sidebar = ({ open, onClose }) => {
 
   return (
     <>
-      {open && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden" onClick={onClose} />}
-      <motion.aside
-        initial={false}
-        animate={{ x: open ? 0 : -280 }}
-        className="fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-950 border-r border-gray-100 dark:border-gray-800 z-40 flex flex-col shadow-xl lg:translate-x-0 lg:shadow-none"
+      {open && <div className="sidebar-overlay" onClick={onClose} />}
+      <aside
+        className="sidebar"
+        style={{ transform: open ? 'translateX(0)' : 'translateX(-100%)' }}
       >
-        {/* Logo */}
-        <div className="px-5 py-5 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-xl shadow-md">
-              🐄
-            </div>
-            <div>
-              <h1 className="font-display font-bold text-gray-900 dark:text-white text-lg leading-none">DairyPro</h1>
-              <p className="text-xs text-gray-400 mt-0.5">Farm Management</p>
-            </div>
+        <div className="sidebar-logo-container">
+          <div className="sidebar-logo-icon">🐄</div>
+          <div>
+            <h1 className="sidebar-logo-text">DairyPro</h1>
+            <p className="sidebar-logo-sub">Farm Management</p>
           </div>
         </div>
 
-        {/* User */}
-        <div className="px-5 py-3 bg-primary-50 dark:bg-primary-950/30">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user?.name}</p>
-              <p className="text-xs text-primary-600 dark:text-primary-400 capitalize">{user?.role}</p>
-            </div>
+        <div className="sidebar-user-container">
+          <div className="sidebar-user-avatar">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <div className="sidebar-user-info">
+            <p className="sidebar-user-name">{user?.name}</p>
+            <p className="sidebar-user-role">{user?.role}</p>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-3 overflow-y-auto scrollbar-thin space-y-0.5">
+        <nav className="sidebar-nav">
           {NAV.map((item, i) => {
             if (item.divider) return (
-              <div key={i} className="pt-4 pb-1.5 px-1">
-                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">{item.label}</p>
-              </div>
+              <div key={i} className="sidebar-nav-divider">{item.label}</div>
             )
             const Icon = item.icon
             return (
@@ -86,23 +76,30 @@ const Sidebar = ({ open, onClose }) => {
                 className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
                 onClick={onClose}
               >
-                <Icon className="w-4 h-4 flex-shrink-0" />
+                <Icon style={{ width: '1.25rem', height: '1.25rem' }} />
                 <span>{item.label}</span>
               </NavLink>
             )
           })}
         </nav>
 
-        {/* Bottom */}
-        <div className="px-3 py-3 border-t border-gray-100 dark:border-gray-800 space-y-1">
+        <div className="sidebar-bottom">
           <NavLink to="/settings" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={onClose}>
-            <HiCog className="w-4 h-4" /><span>Settings</span>
+            <HiCog style={{ width: '1.25rem', height: '1.25rem' }} /><span>Settings</span>
           </NavLink>
-          <button onClick={handleLogout} className="sidebar-link w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
-            <HiLogout className="w-4 h-4" /><span>Logout</span>
+          <button onClick={() => setShowLogoutConfirm(true)} className="sidebar-link sidebar-link-danger">
+            <HiLogout style={{ width: '1.25rem', height: '1.25rem' }} /><span>Logout</span>
           </button>
         </div>
-      </motion.aside>
+      </aside>
+
+      <ConfirmDialog 
+        isOpen={showLogoutConfirm} 
+        onClose={() => setShowLogoutConfirm(false)} 
+        onConfirm={handleLogout} 
+        title="Confirm Logout" 
+        message="Are you sure you want to log out of your account?" 
+      />
     </>
   )
 }

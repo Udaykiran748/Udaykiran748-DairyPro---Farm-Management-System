@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { HiMail, HiLockClosed, HiEye, HiEyeOff } from 'react-icons/hi'
+import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiSparkles } from 'react-icons/hi'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
+import '../styles/Auth.css'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -27,54 +28,72 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-emerald-50 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <div className="glass-card p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-3 animate-float">🐄</div>
-            <h1 className="text-2xl font-display font-bold text-gray-800 dark:text-gray-100">Welcome Back</h1>
-            <p className="text-gray-500 text-sm mt-1">Sign in to DairyPro Farm Management</p>
+    <div className="auth-layout">
+      <div className="auth-image-side">
+        <div className="auth-image-overlay">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}>
+            <div className="auth-brand-badge">DairyPro App</div>
+            <h2 className="auth-quote">"Empowering modern dairy farms with smart technology and sustainable practices."</h2>
+            <p className="auth-quote-author">— The Future of Farm Management</p>
+          </motion.div>
+        </div>
+      </div>
+      
+      <div className="auth-form-side">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }} 
+          animate={{ opacity: 1, x: 0 }} 
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} 
+          className="auth-form-container"
+        >
+          <div className="auth-header">
+            <div className="auth-icon-wrapper">
+              <span className="auth-icon">🐄</span>
+            </div>
+            <h1 className="auth-title">Welcome Back</h1>
+            <p className="auth-subtitle">Sign in to your account to continue</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
-              <div className="relative">
-                <HiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="auth-form-group">
+              <label className="auth-label">Email Address</label>
+              <div className="auth-input-wrapper">
                 <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  className="input-field pl-10" placeholder="admin@farm.com" required />
+                  className="auth-input" placeholder="admin@farm.com" required />
+                <HiMail className="auth-input-icon" />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-              <div className="relative">
-                <HiLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="auth-form-group">
+              <label className="auth-label">Password</label>
+              <div className="auth-input-wrapper">
                 <input type={showPass ? 'text' : 'password'} value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
-                  className="input-field pl-10 pr-10" placeholder="••••••••" required />
+                  className="auth-input" style={{ paddingRight: '3rem' }} placeholder="••••••••" required />
+                <HiLockClosed className="auth-input-icon" />
                 <button type="button" onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showPass ? <HiEyeOff className="w-4 h-4" /> : <HiEye className="w-4 h-4" />}
+                  className="auth-input-action">
+                  {showPass ? <HiEyeOff /> : <HiEye />}
                 </button>
               </div>
             </div>
 
-            <div className="p-3 bg-primary-50 dark:bg-primary-950/30 rounded-xl text-xs text-primary-700 dark:text-primary-300">
-              <strong>Demo:</strong> admin@farm.com / admin123
+            <div className="auth-demo-box">
+              <HiSparkles style={{ color: '#059669', width: '1.25rem', height: '1.25rem' }} />
+              <span><strong>Demo Account:</strong> admin@farm.com / admin123</span>
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
-              {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
+            <button type="submit" disabled={loading} className="auth-submit-btn">
+              {loading ? <div className="spinner" /> : null}
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="auth-footer">
             Don't have an account?{' '}
-            <Link to="/register" className="text-primary-600 font-semibold hover:underline">Register</Link>
+            <Link to="/register" className="auth-link">Create one now</Link>
           </p>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   )
 }

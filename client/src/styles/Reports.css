@@ -1,0 +1,285 @@
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.reports-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card-custom {
+  padding: var(--spacing-md);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.stat-trend {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  margin-top: 0.25rem;
+}
+
+.tabs-container {
+  display: flex;
+  gap: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  color: var(--color-text-muted);
+}
+
+.tab-btn:hover {
+  color: var(--color-text-main);
+}
+
+.tab-btn.active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.chart-card {
+  padding: var(--spacing-lg);
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.monthly-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .monthly-grid-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.monthly-card {
+  padding: var(--spacing-md);
+  text-align: center;
+}
+
+.monthly-value {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1.125rem;
+}
+
+.monthly-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.table-wrapper {
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--color-primary-light);
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  transition: background-color var(--transition-fast);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--color-background);
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+}
+
+.cell-month {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.cell-blue { color: #2563EB; }
+.cell-primary { color: var(--color-primary); font-weight: 500; }
+.cell-red { color: #EF4444; }
+.cell-profit { font-weight: 700; color: var(--color-primary); }
+.cell-margin { color: var(--color-text-muted); }
+
+.animals-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .animals-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.animal-card {
+  padding: var(--spacing-lg);
+}
+
+.animal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.animal-name {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.animal-id {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-family: monospace;
+}
+
+.animal-avg-wrapper {
+  text-align: right;
+}
+
+.animal-avg-value {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.animal-avg-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.health-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.health-score-label {
+  color: var(--color-text-muted);
+}
+
+.health-score-track {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-track {
+  width: 6rem;
+  background-color: var(--color-border);
+  border-radius: 9999px;
+  height: 0.375rem;
+}
+
+.progress-bar {
+  height: 0.375rem;
+  border-radius: 9999px;
+  background-color: var(--color-primary);
+}
+
+.health-score-value {
+  font-weight: 500;
+  color: var(--color-primary);
+}

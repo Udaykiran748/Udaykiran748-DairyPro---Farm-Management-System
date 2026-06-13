@@ -1,4 +1,5 @@
-const Expense = require('../models/Expense');
+const { Expense, sequelize } = require('../models');
+const { Op } = require('sequelize');
 const moment = require('moment');
 
 exports.getExpenses = async (req, res) => {
@@ -8,10 +9,13 @@ exports.getExpenses = async (req, res) => {
     if (category) query.category = category;
     if (startDate || endDate) {
       query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
+      if (startDate) query.date[Op.gte] = new Date(startDate);
+      if (endDate) query.date[Op.lte] = new Date(endDate);
     }
-    const expenses = await Expense.find(query).sort('-date');
+    const expenses = await Expense.findAll({
+      where: query,
+      order: [['date', 'DESC']]
+    });
     const total = expenses.reduce((sum, e) => sum + e.amount, 0);
     res.json({ success: true, count: expenses.length, total, data: expenses });
   } catch (err) {
@@ -31,7 +35,9 @@ exports.createExpense = async (req, res) => {
 
 exports.updateExpense = async (req, res) => {
   try {
-    const expense = await Expense.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const expense = await Expense.findByPk(req.params.id);
+    if (!expense) return res.status(404).json({ success: false, message: 'Expense not found' });
+    await expense.update(req.body);
     res.json({ success: true, data: expense });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -40,7 +46,10 @@ exports.updateExpense = async (req, res) => {
 
 exports.deleteExpense = async (req, res) => {
   try {
-    await Expense.findByIdAndDelete(req.params.id);
+    const expense = await Expense.findByPk(req.params.id);
+    if (expense) {
+      await expense.destroy();
+    }
     res.json({ success: true, message: 'Expense deleted' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -51,12 +60,31 @@ exports.getExpenseSummary = async (req, res) => {
   try {
     const start = moment().startOf('month');
     const end = moment().endOf('month');
-    const summary = await Expense.aggregate([
-      { $match: { date: { $gte: start.toDate(), $lte: end.toDate() } } },
-      { $group: { _id: '$category', total: { $sum: '$amount' } } },
-      { $sort: { total: -1 } }
-    ]);
-    const grandTotal = summary.reduce((sum, s) => sum + s.total, 0);
+    const summary = await Expense.findAll({
+      where: {
+        date: {
+          [Op.gte]: start.toDate(),
+          [Op.lte]: end.toDate()
+        }
+      },
+      attributes: [
+        ['category', '_id'],
+        [sequelize.fn('SUM', sequelize.col('amount')), 'total']
+      ],
+      group: ['category'],
+      order: [[sequelize.fn('SUM', sequelize.col('amount')), 'DESC']]
+    });
+    
+    const allExpenses = await Expense.findAll({
+      where: {
+        date: {
+          [Op.gte]: start.toDate(),
+          [Op.lte]: end.toDate()
+        }
+      }
+    });
+    const grandTotal = allExpenses.reduce((sum, s) => sum + s.amount, 0);
+    
     res.json({ success: true, data: { summary, grandTotal } });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

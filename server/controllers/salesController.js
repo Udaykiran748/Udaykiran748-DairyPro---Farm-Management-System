@@ -1,18 +1,25 @@
-const Sale = require('../models/Sale');
-const Customer = require('../models/Customer');
+const { Sale, Customer, User, sequelize } = require('../models');
+const { Op } = require('sequelize');
 const moment = require('moment');
 
 exports.getSales = async (req, res) => {
   try {
     const { startDate, endDate, customerId } = req.query;
     let query = {};
-    if (customerId) query.customer = customerId;
+    if (customerId) query.customerIdRef = customerId;
     if (startDate || endDate) {
       query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
+      if (startDate) query.date[Op.gte] = new Date(startDate);
+      if (endDate) query.date[Op.lte] = new Date(endDate);
     }
-    const sales = await Sale.find(query).populate('customer', 'name type phone').populate('recordedBy', 'name').sort('-date');
+    const sales = await Sale.findAll({
+      where: query,
+      include: [
+        { model: Customer, as: 'customer', attributes: ['name', 'type', 'phone'] },
+        { model: User, as: 'recordedByUser', attributes: ['name'] }
+      ],
+      order: [['date', 'DESC']]
+    });
     res.json({ success: true, count: sales.length, data: sales });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -22,16 +29,27 @@ exports.getSales = async (req, res) => {
 exports.createSale = async (req, res) => {
   try {
     req.body.recordedBy = req.user.id;
+    if (req.body.customer) req.body.customerIdRef = req.body.customer;
+    
     req.body.totalAmount = req.body.quantity * req.body.ratePerLitre;
     req.body.pendingAmount = req.body.totalAmount - (req.body.paidAmount || 0);
     req.body.paymentStatus = req.body.pendingAmount === 0 ? 'Paid' : req.body.paidAmount > 0 ? 'Partial' : 'Pending';
     req.body.invoiceNo = 'INV-' + Date.now();
+    
     const sale = await Sale.create(req.body);
+    
     if (req.body.pendingAmount > 0) {
-      await Customer.findByIdAndUpdate(req.body.customer, { $inc: { pendingAmount: req.body.pendingAmount } });
+      await Customer.increment('pendingAmount', {
+        by: req.body.pendingAmount,
+        where: { id: req.body.customerIdRef }
+      });
     }
-    await sale.populate('customer', 'name phone');
-    res.status(201).json({ success: true, data: sale });
+    
+    const saleWithCustomer = await Sale.findByPk(sale.id, {
+      include: [{ model: Customer, as: 'customer', attributes: ['name', 'phone'] }]
+    });
+    
+    res.status(201).json({ success: true, data: saleWithCustomer });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -41,10 +59,22 @@ exports.getMonthlySalesSummary = async (req, res) => {
   try {
     const start = moment().startOf('month');
     const end = moment().endOf('month');
-    const result = await Sale.aggregate([
-      { $match: { date: { $gte: start.toDate(), $lte: end.toDate() } } },
-      { $group: { _id: null, totalSales: { $sum: '$totalAmount' }, totalQuantity: { $sum: '$quantity' }, totalPaid: { $sum: '$paidAmount' }, totalPending: { $sum: '$pendingAmount' } } }
-    ]);
+    
+    const result = await Sale.findAll({
+      where: {
+        date: {
+          [Op.gte]: start.toDate(),
+          [Op.lte]: end.toDate()
+        }
+      },
+      attributes: [
+        [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalSales'],
+        [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity'],
+        [sequelize.fn('SUM', sequelize.col('paidAmount')), 'totalPaid'],
+        [sequelize.fn('SUM', sequelize.col('pendingAmount')), 'totalPending']
+      ]
+    });
+    
     res.json({ success: true, data: result[0] || {} });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
